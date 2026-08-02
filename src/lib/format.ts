@@ -20,3 +20,17 @@ export function formatDate(value: string | null) {
   const [year, month, day] = value.split("-").map(Number);
   return dateFormat.format(new Date(year, month - 1, day));
 }
+
+const timestampFormat = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+/** For timestamptz columns, which carry a real instant. */
+export function formatTimestamp(value: string | null) {
+  if (!value) return "—";
+  return timestampFormat.format(new Date(value));
+}

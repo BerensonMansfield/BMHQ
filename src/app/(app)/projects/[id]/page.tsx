@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/page-header";
 import { ProjectStatusBadge } from "@/components/status-badge";
 import { MilestoneSection } from "@/components/milestone-section";
 import { TaskBoard } from "@/components/task-board";
+import { ActivityTimeline } from "@/components/activity-timeline";
+import { getActivities } from "@/lib/activities";
 import { currency, formatDate } from "@/lib/format";
 
 type TaskRow = {
@@ -57,6 +59,8 @@ export default async function ProjectDetailPage({
   ]);
 
   if (!project) notFound();
+
+  const activities = await getActivities([id]);
 
   const account = project.account as { id: string; name: string } | null;
   const deal = project.deal as { id: string; name: string } | null;
@@ -165,6 +169,13 @@ export default async function ProjectDetailPage({
           tasks={(tasks ?? []) as unknown as TaskRow[]}
           milestones={milestones ?? []}
           profiles={profiles ?? []}
+        />
+
+        <ActivityTimeline
+          entityType="project"
+          entityId={project.id}
+          activities={activities}
+          revalidatePath={`/projects/${project.id}`}
         />
       </div>
     </>

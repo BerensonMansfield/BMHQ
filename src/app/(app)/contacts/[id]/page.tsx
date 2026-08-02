@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { ContactForm } from "@/components/contact-form";
 import { DeleteButton } from "@/components/delete-button";
+import { ActivityTimeline } from "@/components/activity-timeline";
+import { getActivities } from "@/lib/activities";
 import { updateContact, deleteContact } from "../actions";
 
 export default async function ContactDetailPage({
@@ -25,6 +27,8 @@ export default async function ContactDetailPage({
 
   if (!contact) notFound();
 
+  const activities = await getActivities([id]);
+
   const name = [contact.first_name, contact.last_name]
     .filter(Boolean)
     .join(" ");
@@ -32,7 +36,7 @@ export default async function ContactDetailPage({
   return (
     <>
       <PageHeader title={name} description="Contact details." />
-      <div className="max-w-2xl px-8 pb-16">
+      <div className="flex max-w-2xl flex-col gap-10 px-8 pb-16">
         <ContactForm
           contact={contact}
           accounts={accounts ?? []}
@@ -41,7 +45,14 @@ export default async function ContactDetailPage({
           submitLabel="Save changes"
         />
 
-        <div className="mt-10 border-t border-border pt-6">
+        <ActivityTimeline
+          entityType="contact"
+          entityId={contact.id}
+          activities={activities}
+          revalidatePath={`/contacts/${contact.id}`}
+        />
+
+        <div className="border-t border-border pt-6">
           <form action={deleteContact}>
             <input type="hidden" name="id" value={contact.id} />
             <DeleteButton

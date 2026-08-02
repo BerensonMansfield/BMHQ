@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { DealForm } from "@/components/deal-form";
 import { DeleteButton } from "@/components/delete-button";
+import { ActivityTimeline } from "@/components/activity-timeline";
+import { getActivities } from "@/lib/activities";
 import { updateDeal, deleteDeal } from "../actions";
 
 export default async function DealDetailPage({
@@ -48,10 +50,12 @@ export default async function DealDetailPage({
         .maybeSingle()
     : { data: null };
 
+  const activities = await getActivities([id]);
+
   return (
     <>
       <PageHeader title={deal.name} description="Deal details." />
-      <div className="max-w-2xl px-8 pb-16">
+      <div className="flex max-w-2xl flex-col gap-10 px-8 pb-16">
         {isWon && (
           <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-good/10 px-5 py-4">
             {existingProject ? (
@@ -98,7 +102,14 @@ export default async function DealDetailPage({
           submitLabel="Save changes"
         />
 
-        <div className="mt-10 border-t border-border pt-6">
+        <ActivityTimeline
+          entityType="deal"
+          entityId={deal.id}
+          activities={activities}
+          revalidatePath={`/deals/${deal.id}`}
+        />
+
+        <div className="border-t border-border pt-6">
           <form action={deleteDeal}>
             <input type="hidden" name="id" value={deal.id} />
             <DeleteButton
