@@ -26,7 +26,7 @@ export default async function AccountDetailPage({
   return (
     <>
       <PageHeader title={account.name} description="Account details." />
-      <div className="mx-auto max-w-2xl px-6 pb-16">
+      <div className="max-w-2xl px-8 pb-16">
         <AccountForm
           account={account}
           profiles={profiles ?? []}

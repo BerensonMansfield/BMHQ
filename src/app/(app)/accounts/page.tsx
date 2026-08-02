@@ -16,7 +16,7 @@ export default async function AccountsPage() {
         title="Accounts"
         description="Client companies — prospects and active clients."
       />
-      <div className="mx-auto max-w-6xl px-6 pb-16">
+      <div className="px-8 pb-16">
         <div className="mb-4 flex justify-end">
           <Link
             href="/accounts/new"

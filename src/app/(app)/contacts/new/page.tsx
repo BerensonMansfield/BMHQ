@@ -17,7 +17,7 @@ export default async function NewContactPage() {
         title="New contact"
         description="Add a person at a client company, or a standalone lead."
       />
-      <div className="mx-auto max-w-2xl px-6 pb-16">
+      <div className="max-w-2xl px-8 pb-16">
         <ContactForm
           accounts={accounts ?? []}
           profiles={profiles ?? []}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -20,7 +21,11 @@ export default async function DealDetailPage({
     { data: stages },
     { data: profiles },
   ] = await Promise.all([
-    supabase.from("deals").select("*").eq("id", id).single(),
+    supabase
+      .from("deals")
+      .select("*, stage:deal_stages(is_won)")
+      .eq("id", id)
+      .single(),
     supabase.from("accounts").select("id, name").order("name"),
     supabase
       .from("contacts")
@@ -32,10 +37,57 @@ export default async function DealDetailPage({
 
   if (!deal) notFound();
 
+  const isWon = Boolean((deal.stage as { is_won: boolean } | null)?.is_won);
+
+  // A won deal can spawn the delivery project it was sold as — but only once.
+  const { data: existingProject } = isWon
+    ? await supabase
+        .from("projects")
+        .select("id, name")
+        .eq("deal_id", id)
+        .maybeSingle()
+    : { data: null };
+
   return (
     <>
       <PageHeader title={deal.name} description="Deal details." />
-      <div className="mx-auto max-w-2xl px-6 pb-16">
+      <div className="max-w-2xl px-8 pb-16">
+        {isWon && (
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-good/10 px-5 py-4">
+            {existingProject ? (
+              <>
+                <p className="text-sm">
+                  Delivered as{" "}
+                  <Link
+                    href={`/projects/${existingProject.id}`}
+                    className="font-medium hover:text-accent"
+                  >
+                    {existingProject.name}
+                  </Link>
+                </p>
+                <Link
+                  href={`/projects/${existingProject.id}`}
+                  className="text-sm text-muted transition-colors hover:text-accent"
+                >
+                  Open project
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-sm">
+                  This deal is won. Ready to start delivery?
+                </p>
+                <Link
+                  href={`/projects/new?deal=${deal.id}&account=${deal.account_id}`}
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+                >
+                  Convert to project
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+
         <DealForm
           deal={deal}
           accounts={accounts ?? []}

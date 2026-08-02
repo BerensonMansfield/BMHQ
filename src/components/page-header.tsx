@@ -6,7 +6,7 @@ export function PageHeader({
   description: string;
 }) {
   return (
-    <div className="mx-auto max-w-6xl px-6 pt-12 pb-8">
+    <div className="px-8 pt-10 pb-6">
       <h1 className="font-display text-3xl">{title}</h1>
       <p className="mt-2 text-muted">{description}</p>
     </div>

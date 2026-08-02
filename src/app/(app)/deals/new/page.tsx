@@ -26,7 +26,7 @@ export default async function NewDealPage() {
         title="New deal"
         description="Track a sale in progress against an account."
       />
-      <div className="mx-auto max-w-2xl px-6 pb-16">
+      <div className="max-w-2xl px-8 pb-16">
         <DealForm
           accounts={accounts ?? []}
           contacts={contacts ?? []}

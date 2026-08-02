@@ -15,7 +15,7 @@ export default async function ContactsPage() {
         title="Contacts"
         description="People, tied to an account or standing alone as a lead."
       />
-      <div className="mx-auto max-w-6xl px-6 pb-16">
+      <div className="px-8 pb-16">
         <div className="mb-4 flex justify-end">
           <Link
             href="/contacts/new"

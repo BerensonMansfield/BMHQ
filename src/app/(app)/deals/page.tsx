@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { currency } from "@/lib/format";
 
 type DealRow = {
   id: string;
@@ -43,7 +38,7 @@ export default async function DealsPage() {
         title="Deals"
         description="Sales in progress, moving through the pipeline."
       />
-      <div className="mx-auto max-w-6xl px-6 pb-16">
+      <div className="px-8 pb-16">
         <div className="mb-4 flex justify-end">
           <Link
             href="/deals/new"

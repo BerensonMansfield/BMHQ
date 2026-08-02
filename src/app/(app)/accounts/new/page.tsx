@@ -13,7 +13,7 @@ export default async function NewAccountPage() {
   return (
     <>
       <PageHeader title="New account" description="Add a client company." />
-      <div className="mx-auto max-w-2xl px-6 pb-16">
+      <div className="max-w-2xl px-8 pb-16">
         <AccountForm
           profiles={profiles ?? []}
           action={createAccount}
