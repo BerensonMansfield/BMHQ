@@ -27,7 +27,24 @@ export async function updateSession(request: NextRequest) {
 
   // Refreshes the auth token if needed — required for Server Components,
   // which can't write cookies themselves.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isPublicPath = pathname === "/login" || pathname.startsWith("/auth");
+
+  if (!user && !isPublicPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && pathname === "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
 
   return response;
 }

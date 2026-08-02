@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "@/app/auth/actions";
 
 const links = [
   { href: "/accounts", label: "Accounts" },
@@ -10,7 +11,7 @@ const links = [
   { href: "/projects", label: "Projects" },
 ];
 
-export function Nav() {
+export function Nav({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
   return (
@@ -36,6 +37,16 @@ export function Nav() {
               </Link>
             );
           })}
+          <span className="h-4 w-px bg-border" aria-hidden="true" />
+          <span className="text-muted">{userEmail}</span>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="text-muted transition-colors hover:text-foreground"
+            >
+              Sign out
+            </button>
+          </form>
         </nav>
       </div>
     </header>
