@@ -1,15 +1,25 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { currency } from "@/lib/format";
+import { currency, contractValue } from "@/lib/format";
 
 type DealRow = {
   id: string;
   name: string;
   value: number | null;
+  revenue_type: string;
+  recurring_amount: number | null;
+  billing_period: string | null;
+  contract_months: number | null;
   expected_close_date: string | null;
   stage_id: string;
   account: { id: string; name: string } | null;
+};
+
+const PERIOD_LABEL: Record<string, string> = {
+  monthly: "mo",
+  quarterly: "qtr",
+  annual: "yr",
 };
 
 export default async function DealsPage() {
@@ -24,7 +34,7 @@ export default async function DealsPage() {
       supabase
         .from("deals")
         .select(
-          "id, name, value, expected_close_date, stage_id, account:accounts(id, name)"
+          "id, name, value, revenue_type, recurring_amount, billing_period, contract_months, expected_close_date, stage_id, account:accounts(id, name)"
         )
         .order("created_at", { ascending: false }),
     ]);
@@ -62,7 +72,7 @@ export default async function DealsPage() {
                   (deal) => deal.stage_id === stage.id
                 );
                 const total = stageDeals.reduce(
-                  (sum, deal) => sum + (deal.value ?? 0),
+                  (sum, deal) => sum + contractValue(deal),
                   0
                 );
 
@@ -101,10 +111,27 @@ export default async function DealsPage() {
                           <p className="mt-1 text-xs text-muted">
                             {deal.account?.name ?? "No account"}
                           </p>
-                          {deal.value !== null && (
-                            <p className="mt-2 text-sm tabular-nums text-accent">
-                              {currency.format(deal.value)}
-                            </p>
+                          {deal.revenue_type === "retainer" ? (
+                            deal.recurring_amount !== null && (
+                              <p className="mt-2 text-sm tabular-nums text-accent">
+                                {currency.format(deal.recurring_amount)}
+                                <span className="text-muted">
+                                  /{PERIOD_LABEL[deal.billing_period ?? "monthly"]}
+                                </span>
+                                {deal.contract_months && (
+                                  <span className="text-muted">
+                                    {" · "}
+                                    {deal.contract_months} mo
+                                  </span>
+                                )}
+                              </p>
+                            )
+                          ) : (
+                            deal.value !== null && (
+                              <p className="mt-2 text-sm tabular-nums text-accent">
+                                {currency.format(deal.value)}
+                              </p>
+                            )
                           )}
                         </Link>
                       ))}

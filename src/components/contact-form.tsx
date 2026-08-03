@@ -12,6 +12,12 @@ type Contact = {
   is_primary?: boolean;
   notes?: string | null;
   owner_id?: string | null;
+  buying_role?: string | null;
+  mobile_phone?: string | null;
+  linkedin_url?: string | null;
+  preferred_contact_method?: string | null;
+  do_not_contact?: boolean;
+  timezone?: string | null;
 };
 
 const inputClass =
@@ -124,29 +130,120 @@ export function ContactForm({
             className={inputClass}
           />
         </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="mobile_phone" className="text-sm font-medium">
+            Mobile
+          </label>
+          <input
+            id="mobile_phone"
+            name="mobile_phone"
+            defaultValue={contact?.mobile_phone ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="linkedin_url" className="text-sm font-medium">
+            LinkedIn
+          </label>
+          <input
+            id="linkedin_url"
+            name="linkedin_url"
+            defaultValue={contact?.linkedin_url ?? ""}
+            className={inputClass}
+          />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-sm font-medium">
-          Job title
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="title" className="text-sm font-medium">
+            Job title
+          </label>
+          <input
+            id="title"
+            name="title"
+            defaultValue={contact?.title ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="buying_role" className="text-sm font-medium">
+            Buying role
+          </label>
+          <select
+            id="buying_role"
+            name="buying_role"
+            defaultValue={contact?.buying_role ?? ""}
+            className={inputClass}
+          >
+            <option value="">Not set</option>
+            <option value="decision_maker">Decision maker</option>
+            <option value="champion">Champion</option>
+            <option value="influencer">Influencer</option>
+            <option value="gatekeeper">Gatekeeper</option>
+            <option value="end_user">End user</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="preferred_contact_method"
+            className="text-sm font-medium"
+          >
+            Prefers
+          </label>
+          <select
+            id="preferred_contact_method"
+            name="preferred_contact_method"
+            defaultValue={contact?.preferred_contact_method ?? ""}
+            className={inputClass}
+          >
+            <option value="">Not set</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone</option>
+            <option value="text">Text</option>
+            <option value="slack">Slack</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="timezone" className="text-sm font-medium">
+            Timezone
+          </label>
+          <input
+            id="timezone"
+            name="timezone"
+            placeholder="ET, PT, GMT…"
+            defaultValue={contact?.timezone ?? ""}
+            className={inputClass}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <label className="flex items-center gap-2.5 text-sm">
+          <input
+            type="checkbox"
+            name="is_primary"
+            defaultChecked={contact?.is_primary}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          Main point of contact for this account
         </label>
-        <input
-          id="title"
-          name="title"
-          defaultValue={contact?.title ?? ""}
-          className={inputClass}
-        />
-      </div>
 
-      <label className="flex items-center gap-2.5 text-sm">
-        <input
-          type="checkbox"
-          name="is_primary"
-          defaultChecked={contact?.is_primary}
-          className="h-4 w-4 accent-[var(--accent)]"
-        />
-        Main point of contact for this account
-      </label>
+        <label className="flex items-center gap-2.5 text-sm">
+          <input
+            type="checkbox"
+            name="do_not_contact"
+            defaultChecked={contact?.do_not_contact}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          Do not contact — keep them on file, off outreach
+        </label>
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="notes" className="text-sm font-medium">

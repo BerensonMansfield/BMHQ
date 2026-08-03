@@ -33,6 +33,12 @@ export async function createProject(formData: FormData) {
       due_date: valueOrNull(formData, "due_date"),
       budget: numberOrNull(formData, "budget"),
       owner_id: valueOrNull(formData, "owner_id"),
+      health: formData.get("health") as string,
+      service_line: valueOrNull(formData, "service_line"),
+      billing_type: valueOrNull(formData, "billing_type"),
+      estimated_hours: numberOrNull(formData, "estimated_hours"),
+      client_contact_id: valueOrNull(formData, "client_contact_id"),
+      internal_notes: valueOrNull(formData, "internal_notes"),
     })
     .select("id")
     .single();
@@ -59,6 +65,12 @@ export async function updateProject(formData: FormData) {
       due_date: valueOrNull(formData, "due_date"),
       budget: numberOrNull(formData, "budget"),
       owner_id: valueOrNull(formData, "owner_id"),
+      health: formData.get("health") as string,
+      service_line: valueOrNull(formData, "service_line"),
+      billing_type: valueOrNull(formData, "billing_type"),
+      estimated_hours: numberOrNull(formData, "estimated_hours"),
+      client_contact_id: valueOrNull(formData, "client_contact_id"),
+      internal_notes: valueOrNull(formData, "internal_notes"),
     })
     .eq("id", id);
 

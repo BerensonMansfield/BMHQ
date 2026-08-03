@@ -13,11 +13,12 @@ export default async function EditProjectPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: project }, { data: accounts }, { data: deals }, { data: profiles }] =
+  const [{ data: project }, { data: accounts }, { data: deals }, { data: contacts }, { data: profiles }] =
     await Promise.all([
       supabase.from("projects").select("*").eq("id", id).single(),
       supabase.from("accounts").select("id, name").order("name"),
       supabase.from("deals").select("id, name, account_id").order("name"),
+      supabase.from("contacts").select("id, first_name, last_name").order("first_name"),
       supabase
         .from("profiles")
         .select("id, full_name, email")
@@ -35,6 +36,7 @@ export default async function EditProjectPage({
           accounts={accounts ?? []}
           deals={deals ?? []}
           profiles={profiles ?? []}
+          contacts={contacts ?? []}
           action={updateProject}
           submitLabel="Save changes"
         />

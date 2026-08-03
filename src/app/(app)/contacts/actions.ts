@@ -25,6 +25,15 @@ export async function createContact(formData: FormData) {
       is_primary: formData.get("is_primary") === "on",
       notes: valueOrNull(formData, "notes"),
       owner_id: valueOrNull(formData, "owner_id"),
+      buying_role: valueOrNull(formData, "buying_role"),
+      mobile_phone: valueOrNull(formData, "mobile_phone"),
+      linkedin_url: valueOrNull(formData, "linkedin_url"),
+      preferred_contact_method: valueOrNull(
+        formData,
+        "preferred_contact_method"
+      ),
+      do_not_contact: formData.get("do_not_contact") === "on",
+      timezone: valueOrNull(formData, "timezone"),
     })
     .select("id")
     .single();
@@ -51,6 +60,15 @@ export async function updateContact(formData: FormData) {
       is_primary: formData.get("is_primary") === "on",
       notes: valueOrNull(formData, "notes"),
       owner_id: valueOrNull(formData, "owner_id"),
+      buying_role: valueOrNull(formData, "buying_role"),
+      mobile_phone: valueOrNull(formData, "mobile_phone"),
+      linkedin_url: valueOrNull(formData, "linkedin_url"),
+      preferred_contact_method: valueOrNull(
+        formData,
+        "preferred_contact_method"
+      ),
+      do_not_contact: formData.get("do_not_contact") === "on",
+      timezone: valueOrNull(formData, "timezone"),
     })
     .eq("id", id);
 

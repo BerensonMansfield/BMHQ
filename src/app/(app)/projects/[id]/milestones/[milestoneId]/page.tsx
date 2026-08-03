@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { DeleteButton } from "@/components/delete-button";
 import { TaskBoard } from "@/components/task-board";
+import { BlockerPanel } from "@/components/blocker-panel";
+import { ActivityTimeline } from "@/components/activity-timeline";
+import { getActivities } from "@/lib/activities";
+import { getBlockers } from "@/lib/blockers";
 import { updateMilestone, deleteMilestone } from "../../actions";
 
 type TaskRow = {
@@ -41,6 +45,8 @@ export default async function MilestoneDetailPage({
           "id, title, status, priority, due_date, milestone_id, assignee:profiles!tasks_assignee_id_fkey(full_name, email)"
         )
         .eq("milestone_id", milestoneId)
+        // Subtasks belong on their parent's page, not this board.
+        .is("parent_task_id", null)
         .order("created_at"),
       supabase
         .from("profiles")
@@ -49,6 +55,11 @@ export default async function MilestoneDetailPage({
     ]);
 
   if (!milestone) notFound();
+
+  const [activities, blockers] = await Promise.all([
+    getActivities([milestoneId]),
+    getBlockers([milestoneId]),
+  ]);
 
   const project = milestone.project as { id: string; name: string };
 
@@ -116,6 +127,37 @@ export default async function MilestoneDetailPage({
               </div>
             </div>
 
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="owner_id" className="text-sm font-medium">
+                  Owner
+                </label>
+                <select
+                  id="owner_id"
+                  name="owner_id"
+                  defaultValue={milestone.owner_id ?? ""}
+                  className={inputClass}
+                >
+                  <option value="">Unassigned</option>
+                  {(profiles ?? []).map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.full_name ?? profile.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <label className="flex items-end gap-2.5 pb-2.5 text-sm">
+                <input
+                  type="checkbox"
+                  name="is_client_facing"
+                  defaultChecked={milestone.is_client_facing}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                A client deliverable, not an internal step
+              </label>
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <label htmlFor="description" className="text-sm font-medium">
                 Description
@@ -153,6 +195,21 @@ export default async function MilestoneDetailPage({
           profiles={profiles ?? []}
           heading="Tasks in this milestone"
           defaultMilestoneId={milestone.id}
+        />
+
+        <BlockerPanel
+          entityType="milestone"
+          entityId={milestone.id}
+          blockers={blockers}
+          profiles={profiles ?? []}
+          revalidatePath={`/projects/${project.id}/milestones/${milestone.id}`}
+        />
+
+        <ActivityTimeline
+          entityType="milestone"
+          entityId={milestone.id}
+          activities={activities}
+          revalidatePath={`/projects/${project.id}/milestones/${milestone.id}`}
         />
 
         <div className="border-t border-border pt-6">

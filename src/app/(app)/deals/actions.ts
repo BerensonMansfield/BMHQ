@@ -17,6 +17,33 @@ function numberOrNull(formData: FormData, key: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+/**
+ * A one-time deal carries `value`; a retainer carries a per-period amount over
+ * an optional term. Clearing the other side's columns keeps a deal from
+ * reading as both at once after someone switches the type.
+ */
+function revenueFields(formData: FormData) {
+  const revenueType = (formData.get("revenue_type") as string) ?? "one_time";
+
+  if (revenueType === "retainer") {
+    return {
+      revenue_type: "retainer",
+      value: null,
+      recurring_amount: numberOrNull(formData, "recurring_amount"),
+      billing_period: valueOrNull(formData, "billing_period") ?? "monthly",
+      contract_months: numberOrNull(formData, "contract_months"),
+    };
+  }
+
+  return {
+    revenue_type: "one_time",
+    value: numberOrNull(formData, "value"),
+    recurring_amount: null,
+    billing_period: null,
+    contract_months: null,
+  };
+}
+
 // A deal is closed the moment it lands in a won or lost stage, and reopens
 // if it's moved back out of one.
 async function closedAtForStage(
@@ -46,10 +73,15 @@ export async function createDeal(formData: FormData) {
       primary_contact_id: valueOrNull(formData, "primary_contact_id"),
       name: (formData.get("name") as string).trim(),
       stage_id: stageId,
-      value: numberOrNull(formData, "value"),
+      ...revenueFields(formData),
       expected_close_date: valueOrNull(formData, "expected_close_date"),
       closed_at: await closedAtForStage(supabase, stageId, null),
       source: valueOrNull(formData, "source"),
+      service_line: valueOrNull(formData, "service_line"),
+      probability: numberOrNull(formData, "probability"),
+      next_step: valueOrNull(formData, "next_step"),
+      lost_reason: valueOrNull(formData, "lost_reason"),
+      competitor: valueOrNull(formData, "competitor"),
       notes: valueOrNull(formData, "notes"),
       owner_id: valueOrNull(formData, "owner_id"),
     })
@@ -80,7 +112,7 @@ export async function updateDeal(formData: FormData) {
       primary_contact_id: valueOrNull(formData, "primary_contact_id"),
       name: (formData.get("name") as string).trim(),
       stage_id: stageId,
-      value: numberOrNull(formData, "value"),
+      ...revenueFields(formData),
       expected_close_date: valueOrNull(formData, "expected_close_date"),
       closed_at: await closedAtForStage(
         supabase,
@@ -88,6 +120,11 @@ export async function updateDeal(formData: FormData) {
         existing?.closed_at ?? null
       ),
       source: valueOrNull(formData, "source"),
+      service_line: valueOrNull(formData, "service_line"),
+      probability: numberOrNull(formData, "probability"),
+      next_step: valueOrNull(formData, "next_step"),
+      lost_reason: valueOrNull(formData, "lost_reason"),
+      competitor: valueOrNull(formData, "competitor"),
       notes: valueOrNull(formData, "notes"),
       owner_id: valueOrNull(formData, "owner_id"),
     })

@@ -6,7 +6,7 @@ import {
   ProjectStatusBadge,
   TaskPriorityBadge,
 } from "@/components/status-badge";
-import { currency, formatDate } from "@/lib/format";
+import { currency, formatDate, contractValue, monthlyValue } from "@/lib/format";
 
 function todayISO() {
   const now = new Date();
@@ -15,7 +15,14 @@ function todayISO() {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
-type DealRow = { stage_id: string; value: number | null };
+type DealRow = {
+  stage_id: string;
+  value: number | null;
+  revenue_type: string;
+  recurring_amount: number | null;
+  billing_period: string | null;
+  contract_months: number | null;
+};
 type TaskRow = {
   id: string;
   title: string;
@@ -46,7 +53,11 @@ export default async function DashboardPage() {
       .from("deal_stages")
       .select("id, name, is_won, is_lost")
       .order("sort_order"),
-    supabase.from("deals").select("stage_id, value"),
+    supabase
+      .from("deals")
+      .select(
+        "stage_id, value, revenue_type, recurring_amount, billing_period, contract_months"
+      ),
     supabase
       .from("projects")
       .select("id, name, status, due_date, account:accounts(name)")
@@ -77,13 +88,20 @@ export default async function DashboardPage() {
 
   const dealRows = (deals ?? []) as DealRow[];
   const openDeals = dealRows.filter((deal) => openStageIds.has(deal.stage_id));
+  const wonDeals = dealRows.filter((deal) => wonStageIds.has(deal.stage_id));
+
+  // Retainers are counted at contract value alongside one-off project fees,
+  // and their monthly run rate is reported on its own — a $5k/mo retainer and
+  // a $5k project are not the same thing.
   const openPipeline = openDeals.reduce(
-    (sum, deal) => sum + (deal.value ?? 0),
+    (sum, deal) => sum + contractValue(deal),
     0
   );
-  const wonTotal = dealRows
-    .filter((deal) => wonStageIds.has(deal.stage_id))
-    .reduce((sum, deal) => sum + (deal.value ?? 0), 0);
+  const wonTotal = wonDeals.reduce((sum, deal) => sum + contractValue(deal), 0);
+  const wonMonthly = wonDeals.reduce((sum, deal) => sum + monthlyValue(deal), 0);
+  const openRetainers = openDeals.filter(
+    (deal) => deal.revenue_type === "retainer"
+  ).length;
 
   const pipelineByStage = openStages.map((stage) => {
     const stageDeals = openDeals.filter((deal) => deal.stage_id === stage.id);
@@ -91,7 +109,7 @@ export default async function DashboardPage() {
       id: stage.id,
       name: stage.name,
       count: stageDeals.length,
-      total: stageDeals.reduce((sum, deal) => sum + (deal.value ?? 0), 0),
+      total: stageDeals.reduce((sum, deal) => sum + contractValue(deal), 0),
     };
   });
 
@@ -111,12 +129,19 @@ export default async function DashboardPage() {
         <StatTile
           label="Open pipeline"
           value={currency.format(openPipeline)}
-          context={`${openDeals.length} ${openDeals.length === 1 ? "deal" : "deals"} in play`}
+          context={`${openDeals.length} ${openDeals.length === 1 ? "deal" : "deals"}${
+            openRetainers > 0 ? `, ${openRetainers} retainer` : ""
+          }`}
           href="/deals"
         />
         <StatTile
           label="Won to date"
           value={currency.format(wonTotal)}
+          context={
+            wonMonthly > 0
+              ? `${currency.format(wonMonthly)}/mo recurring`
+              : undefined
+          }
           href="/deals"
         />
         <StatTile

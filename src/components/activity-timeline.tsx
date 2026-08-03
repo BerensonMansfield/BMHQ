@@ -5,7 +5,13 @@ import {
   deleteActivity,
 } from "@/app/(app)/activities/actions";
 
-export type EntityType = "account" | "contact" | "deal" | "project" | "task";
+export type EntityType =
+  | "account"
+  | "contact"
+  | "deal"
+  | "project"
+  | "task"
+  | "milestone";
 
 export type Activity = {
   id: string;
@@ -44,6 +50,8 @@ function entityHref(entityType: string, entityId: string) {
       return `/deals/${entityId}`;
     case "project":
       return `/projects/${entityId}`;
+    // Tasks and milestones live under a project route, so linking them from a
+    // rollup would need the project id we don't carry here.
     default:
       return null;
   }

@@ -10,6 +10,12 @@ type Account = {
   status?: string;
   description?: string | null;
   owner_id?: string | null;
+  source?: string | null;
+  company_size?: string | null;
+  linkedin_url?: string | null;
+  billing_email?: string | null;
+  renewal_date?: string | null;
+  timezone?: string | null;
 };
 
 const inputClass =
@@ -126,6 +132,84 @@ export function AccountForm({
             id="address"
             name="address"
             defaultValue={account?.address ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="source" className="text-sm font-medium">
+            Source
+          </label>
+          <input
+            id="source"
+            name="source"
+            placeholder="Referral, inbound, event…"
+            defaultValue={account?.source ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="company_size" className="text-sm font-medium">
+            Company size
+          </label>
+          <input
+            id="company_size"
+            name="company_size"
+            placeholder="1–10, 11–50, 51–200…"
+            defaultValue={account?.company_size ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="linkedin_url" className="text-sm font-medium">
+            LinkedIn
+          </label>
+          <input
+            id="linkedin_url"
+            name="linkedin_url"
+            defaultValue={account?.linkedin_url ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="billing_email" className="text-sm font-medium">
+            Billing email
+          </label>
+          <input
+            id="billing_email"
+            name="billing_email"
+            type="email"
+            placeholder="Where invoices go"
+            defaultValue={account?.billing_email ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="renewal_date" className="text-sm font-medium">
+            Renewal date
+          </label>
+          <input
+            id="renewal_date"
+            name="renewal_date"
+            type="date"
+            defaultValue={account?.renewal_date ?? ""}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="timezone" className="text-sm font-medium">
+            Timezone
+          </label>
+          <input
+            id="timezone"
+            name="timezone"
+            placeholder="ET, PT, GMT…"
+            defaultValue={account?.timezone ?? ""}
             className={inputClass}
           />
         </div>

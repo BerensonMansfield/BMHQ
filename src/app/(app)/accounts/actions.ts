@@ -24,6 +24,12 @@ export async function createAccount(formData: FormData) {
       status: formData.get("status") as string,
       description: valueOrNull(formData, "description"),
       owner_id: valueOrNull(formData, "owner_id"),
+      source: valueOrNull(formData, "source"),
+      company_size: valueOrNull(formData, "company_size"),
+      linkedin_url: valueOrNull(formData, "linkedin_url"),
+      billing_email: valueOrNull(formData, "billing_email"),
+      renewal_date: valueOrNull(formData, "renewal_date"),
+      timezone: valueOrNull(formData, "timezone"),
     })
     .select("id")
     .single();
@@ -49,6 +55,12 @@ export async function updateAccount(formData: FormData) {
       status: formData.get("status") as string,
       description: valueOrNull(formData, "description"),
       owner_id: valueOrNull(formData, "owner_id"),
+      source: valueOrNull(formData, "source"),
+      company_size: valueOrNull(formData, "company_size"),
+      linkedin_url: valueOrNull(formData, "linkedin_url"),
+      billing_email: valueOrNull(formData, "billing_email"),
+      renewal_date: valueOrNull(formData, "renewal_date"),
+      timezone: valueOrNull(formData, "timezone"),
     })
     .eq("id", id);
 

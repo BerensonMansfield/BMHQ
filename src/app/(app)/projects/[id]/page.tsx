@@ -6,7 +6,9 @@ import { ProjectStatusBadge } from "@/components/status-badge";
 import { MilestoneSection } from "@/components/milestone-section";
 import { TaskBoard } from "@/components/task-board";
 import { ActivityTimeline } from "@/components/activity-timeline";
+import { BlockerPanel } from "@/components/blocker-panel";
 import { getActivities } from "@/lib/activities";
+import { getBlockers } from "@/lib/blockers";
 import { currency, formatDate } from "@/lib/format";
 
 type TaskRow = {
@@ -16,6 +18,7 @@ type TaskRow = {
   priority: string;
   due_date: string | null;
   milestone_id: string | null;
+  parent_task_id: string | null;
   assignee: { full_name: string | null; email: string } | null;
 };
 
@@ -51,7 +54,7 @@ export default async function ProjectDetailPage({
       // tasks points at profiles twice (assignee_id and created_by), so the
       // embed has to name which foreign key it means.
       .select(
-        "id, title, status, priority, due_date, milestone_id, assignee:profiles!tasks_assignee_id_fkey(full_name, email)"
+        "id, title, status, priority, due_date, milestone_id, parent_task_id, assignee:profiles!tasks_assignee_id_fkey(full_name, email)"
       )
       .eq("project_id", id)
       .order("created_at"),
@@ -60,7 +63,35 @@ export default async function ProjectDetailPage({
 
   if (!project) notFound();
 
-  const activities = await getActivities([id]);
+  const allTasks = (tasks ?? []) as unknown as TaskRow[];
+  // The board shows top-level work; subtasks live on their parent's page.
+  const topLevelTasks = allTasks.filter((task) => !task.parent_task_id);
+
+  const [activities, blockers] = await Promise.all([
+    getActivities([id]),
+    getBlockers([id, ...allTasks.map((task) => task.id)]),
+  ]);
+
+  const subtaskProgress = new Map<string, { done: number; total: number }>();
+  for (const task of allTasks) {
+    if (!task.parent_task_id) continue;
+    const entry = subtaskProgress.get(task.parent_task_id) ?? {
+      done: 0,
+      total: 0,
+    };
+    entry.total += 1;
+    if (task.status === "done") entry.done += 1;
+    subtaskProgress.set(task.parent_task_id, entry);
+  }
+
+  const blockedTaskIds = new Set(
+    blockers
+      .filter((blocker) => !blocker.resolved_at && blocker.entity_type === "task")
+      .map((blocker) => blocker.entity_id)
+  );
+  const projectBlockers = blockers.filter(
+    (blocker) => blocker.entity_type === "project"
+  );
 
   const account = project.account as { id: string; name: string } | null;
   const deal = project.deal as { id: string; name: string } | null;
@@ -161,14 +192,24 @@ export default async function ProjectDetailPage({
         <MilestoneSection
           projectId={project.id}
           milestones={milestones ?? []}
-          tasks={(tasks ?? []) as unknown as TaskRow[]}
+          tasks={allTasks}
         />
 
         <TaskBoard
           projectId={project.id}
-          tasks={(tasks ?? []) as unknown as TaskRow[]}
+          tasks={topLevelTasks}
           milestones={milestones ?? []}
           profiles={profiles ?? []}
+          subtaskProgress={subtaskProgress}
+          blockedTaskIds={blockedTaskIds}
+        />
+
+        <BlockerPanel
+          entityType="project"
+          entityId={project.id}
+          blockers={projectBlockers}
+          profiles={profiles ?? []}
+          revalidatePath={`/projects/${project.id}`}
         />
 
         <ActivityTimeline

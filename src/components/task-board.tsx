@@ -38,6 +38,8 @@ export function TaskBoard({
   profiles,
   heading = "Tasks",
   defaultMilestoneId,
+  subtaskProgress,
+  blockedTaskIds,
 }: {
   projectId: string;
   tasks: Task[];
@@ -46,6 +48,10 @@ export function TaskBoard({
   heading?: string;
   /** Preselects the milestone on the quick-add form. */
   defaultMilestoneId?: string;
+  /** Done/total per parent task, for the progress hint on a card. */
+  subtaskProgress?: Map<string, { done: number; total: number }>;
+  /** Tasks carrying an unresolved roadblock. */
+  blockedTaskIds?: Set<string>;
 }) {
   return (
     <section className="flex flex-col gap-4">
@@ -166,15 +172,36 @@ export function TaskBoard({
                     </p>
                   )}
 
-                  {columnTasks.map((task) => (
+                  {columnTasks.map((task) => {
+                    const progress = subtaskProgress?.get(task.id);
+                    const isBlocked = blockedTaskIds?.has(task.id) ?? false;
+
+                    return (
                     <article
                       key={task.id}
-                      className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3"
+                      className={`flex flex-col gap-2 rounded-lg border bg-surface p-3 ${
+                        isBlocked ? "border-bad/40" : "border-border"
+                      }`}
                     >
-                      <p className="text-sm font-medium">{task.title}</p>
+                      <Link
+                        href={`/projects/${projectId}/tasks/${task.id}`}
+                        className="text-sm font-medium transition-colors hover:text-accent"
+                      >
+                        {task.title}
+                      </Link>
 
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
                         <TaskPriorityBadge priority={task.priority} />
+                        {isBlocked && (
+                          <span className="inline-flex items-center rounded-full bg-bad/15 px-2 py-0.5 font-medium text-bad">
+                            Blocked
+                          </span>
+                        )}
+                        {progress && (
+                          <span className="tabular-nums">
+                            {progress.done}/{progress.total} subtasks
+                          </span>
+                        )}
                         {task.due_date && (
                           <span className="tabular-nums">
                             {formatDate(task.due_date)}
@@ -236,7 +263,8 @@ export function TaskBoard({
                         </form>
                       </div>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
